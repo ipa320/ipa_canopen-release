@@ -1,0 +1,12 @@
+Source: ros-hydro-ipa-canopen-core
+Section: misc
+Priority: extra
+Maintainer: Thiago de Freitas <tdf@ipa.fhg.de>
+Build-Depends: debhelper (>= 7.0.50~), ros-hydro-catkin, ros-hydro-libpcan, ros-hydro-roscpp
+Homepage: http://ros.org/wiki/ipa_canopen_core
+Standards-Version: 3.9.2
+
+Package: ros-hydro-ipa-canopen-core
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-hydro-libpcan, ros-hydro-roscpp
+Description: ROS-independent CANopen C++ library. User manual: https://github.com/ipa320/ipa_canopen/blob/master/ipa_canopen_core/doc/usermanual.pdf?raw=true
