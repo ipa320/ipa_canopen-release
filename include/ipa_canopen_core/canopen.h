@@ -126,6 +126,9 @@ namespace canopen{
             std::vector<uint16_t> product_code_;
             uint16_t revision_number_;
 
+            std::string error_register_;
+            std::string manufacturer_error_register_;
+
             bool initialized_;
             bool nmt_init_;
             bool driveReferenced_;
@@ -138,6 +141,7 @@ namespace canopen{
             std::chrono::milliseconds timeStamp_msec_;
             std::chrono::microseconds timeStamp_usec_;
 
+            int8_t modes_of_operation_display_;
 
             bool hardware_limit_positive_;
             bool hardware_limit_negative_;
@@ -161,6 +165,7 @@ namespace canopen{
             bool man_specific1_;
             bool man_specific2_;
 
+            double temperature_;
 
         public:
 
@@ -227,6 +232,10 @@ namespace canopen{
                 return manufacturer_device_name_;
             }
 
+           std::string getManufactureErrorRegister(){
+                return manufacturer_error_register_;
+            }
+
             std::vector<uint16_t> getVendorID(){
                 return vendor_id_;
             }
@@ -264,6 +273,10 @@ namespace canopen{
 
             bool getVoltageEnabled(){
                 return volt_enable_;
+            }
+
+            double getDriverTemperature(){
+                return temperature_;
             }
 
             bool getReadySwitchOn(){
@@ -337,6 +350,16 @@ namespace canopen{
 
             bool getFault(){
                 return fault_;
+            }
+
+
+            int8_t getCurrentModeofOperation()
+            {
+                return modes_of_operation_display_;
+            }
+
+            std::string getErrorRegister(){
+                return error_register_;
             }
 
             bool getIPMode(){
@@ -429,6 +452,10 @@ namespace canopen{
                 volt_enable_ = voltage_enabled;
             }
 
+            void setDriverTemperature(double temperature){
+                temperature_ = temperature;
+            }
+
             void setReadySwitchON(bool r_switch_on){
                 ready_switch_on_ = r_switch_on;
             }
@@ -504,6 +531,19 @@ namespace canopen{
 
             void setFault(bool fault){
                 fault_ = fault;
+            }
+
+            void setCurrentModeofOperation(int8_t mode_display)
+            {
+                modes_of_operation_display_ = mode_display;
+            }
+
+            void setErrorRegister(std::string error_register){
+                error_register_ = error_register;
+            }
+
+            void setManufacturerErrorRegister(std::string manufacturer_error_register){
+                manufacturer_error_register_ = manufacturer_error_register;
             }
 
             void setIPMode(bool ip_mode){
@@ -635,8 +675,9 @@ namespace canopen{
         return static_cast<double>(static_cast<double>(alpha)/360000.0*2*M_PI);
     }
 
-    void statusword_incoming(uint8_t CANid, BYTE data[8]);
-    void errorword_incoming(uint8_t CANid, BYTE data[1]);
+    void sdo_incoming(uint8_t CANid, BYTE data[8]);
+    void errorword_incoming(uint8_t CANid, BYTE data[8]);
+    void manufacturer_incoming(uint8_t CANid, BYTE data[8]);
 
     extern std::map<std::string, DeviceGroup> deviceGroups;	// DeviceGroup name -> DeviceGroup object
     extern HANDLE h;
@@ -650,18 +691,19 @@ namespace canopen{
 
     void setNMTState(uint16_t CANid, std::string targetState);
     void setMotorState(uint16_t CANid, std::string targetState);
+    bool setOperationMode(uint16_t CANid, const int8_t targetMode, double timeout = 3.0);
 
     /***************************************************************/
     //	define get errors functions
     /***************************************************************/
-    void makeRPDOMapping(int object,std::string index1, int index1_size, std::string index2, int index2_size );
+    void makeRPDOMapping(int object, std::vector<std::string> registers, std::vector<int> sizes, u_int8_t sync_type);
     void disableRPDO(int object);
     void clearRPDOMapping(int object);
     void enableRPDO(int object);
 
     void setObjects();
 
-    void makeTPDOMapping(int object, std::string index1, int index1_size, std::string index2, int index2_size);
+    void makeTPDOMapping(int object, std::vector<std::string> registers, std::vector<int> sizes, u_int8_t sync_type);
     void disableTPDO(int object);
     void clearTPDOMapping(int object);
     void enableTPDO(int object);
@@ -671,17 +713,20 @@ namespace canopen{
     void getErrors(uint16_t CANid);
     std::vector<char> obtainManSWVersion(uint16_t CANid, std::shared_ptr<TPCANRdMsg> m);
     std::vector<char> obtainManHWVersion(uint16_t CANid, std::shared_ptr<TPCANRdMsg> m);
-    std::vector<char> obtainManDevName(uint16_t CANid, std::shared_ptr<TPCANRdMsg> m);
-    std::vector<uint16_t> obtainVendorID(uint16_t CANid, std::shared_ptr<TPCANRdMsg> m);
+    std::vector<char> obtainManDevName(uint16_t CANid, int size_name);
+    std::vector<uint16_t> obtainVendorID(uint16_t CANid);
     uint16_t obtainRevNr(uint16_t CANid, std::shared_ptr<TPCANRdMsg> m);
     std::vector<uint16_t> obtainProdCode(uint16_t CANid, std::shared_ptr<TPCANRdMsg> m);
     void readErrorsRegister(uint16_t CANid, std::shared_ptr<TPCANRdMsg> m);
-    void readManErrReg(uint16_t CANid, std::shared_ptr<TPCANRdMsg>  m);
+    void readManErrReg(uint16_t CANid);
 
 
     /***************************************************************/
     //	define init and recover variables and functions
     /***************************************************************/
+
+    extern bool sdo_protect;
+    extern BYTE protect_msg[];
 
     extern bool atFirstInit;
     extern bool recover_active;
@@ -693,11 +738,11 @@ namespace canopen{
 
     extern bool use_limit_switch;
 
-    extern uint8_t operation_mode;
     extern std::string operation_mode_param;
 
     bool openConnection(std::string devName, std::string baudrate);
     bool init(std::string deviceFile, std::chrono::milliseconds syncInterval);
+    bool init(std::string deviceFile, const int8_t mode_of_operation);
     void pre_init();
     bool recover(std::string deviceFile, std::chrono::milliseconds syncInterval);
     void halt(std::string deviceFile, std::chrono::milliseconds syncInterval);
@@ -791,6 +836,7 @@ namespace canopen{
 
     const SDOkey STATUSWORD(0x6041, 0x0);
     const SDOkey ERRORWORD(0x1001, 0x0);
+    const SDOkey DRIVERTEMPERATURE(0x22A2, 0x0);
     const SDOkey MANUFACTURER(0x1002, 0x0);
     const SDOkey MANUFACTURERDEVICENAME(0x1008, 0x0);
     const SDOkey MANUFACTURERHWVERSION(0x1009, 0x0);
@@ -838,67 +884,16 @@ namespace canopen{
     const int RSDO = 0x600;
 
     //TPDO PARAMETERS
-    const SDOkey TPDO1(0x1800, 0x0);
-    const SDOkey TPDO2(0x1801, 0x0);
-    const SDOkey TPDO3(0x1802, 0x0);
-    const SDOkey TPDO4(0x1803, 0x0);
+    const SDOkey TPDO(0x1800, 0x0);
 
-    const SDOkey TPDO1_sub1(0x1800, 0x1);
-    const SDOkey TPDO2_sub1(0x1801, 0x1);
-    const SDOkey TPDO3_sub1(0x1802, 0x1);
-    const SDOkey TPDO4_sub1(0x1803, 0x1);
-
-    const SDOkey TPDO1_sub2(0x1800, 0x2);
-    const SDOkey TPDO2_sub2(0x1801, 0x2);
-    const SDOkey TPDO3_sub2(0x1802, 0x2);
-    const SDOkey TPDO4_sub2(0x1803, 0x2);
     //RPDO PARAMETERS
-    const SDOkey RPDO1(0x1400, 0x0);
-    const SDOkey RPDO2(0x1401, 0x0);
-    const SDOkey RPDO3(0x1402, 0x0);
-    const SDOkey RPDO4(0x1403, 0x0);
-
-    const SDOkey RPDO1_sub1(0x1400, 0x1);
-    const SDOkey RPDO2_sub1(0x1401, 0x1);
-    const SDOkey RPDO3_sub1(0x1402, 0x1);
-    const SDOkey RPDO4_sub1(0x1403, 0x1);
-
-    const SDOkey RPDO1_sub2(0x1400, 0x2);
-    const SDOkey RPDO2_sub2(0x1401, 0x2);
-    const SDOkey RPDO3_sub2(0x1402, 0x2);
-    const SDOkey RPDO4_sub2(0x1403, 0x2);
+    const SDOkey RPDO(0x1400, 0x0);
 
     //TPDO MAPPING
-    const SDOkey TPDO1_map(0x1A00, 0x0);
-    const SDOkey TPDO2_map(0x1A01, 0x0);
-    const SDOkey TPDO3_map(0x1A02, 0x0);
-    const SDOkey TPDO4_map(0x1A03, 0x0);
-
-    const SDOkey TPDO1_map_sub1(0x1A00, 0x1);
-    const SDOkey TPDO2_map_sub1(0x1A01, 0x1);
-    const SDOkey TPDO3_map_sub1(0x1A02, 0x1);
-    const SDOkey TPDO4_map_sub1(0x1A03, 0x1);
-
-    const SDOkey TPDO1_map_sub2(0x1A00, 0x2);
-    const SDOkey TPDO2_map_sub2(0x1A01, 0x2);
-    const SDOkey TPDO3_map_sub2(0x1A02, 0x2);
-    const SDOkey TPDO4_map_sub2(0x1A03, 0x2);
+    const SDOkey TPDO_map(0x1A00, 0x0);
 
     //RPDO MAPPING
-    const SDOkey RPDO1_map(0x1600, 0x0);
-    const SDOkey RPDO2_map(0x1601, 0x0);
-    const SDOkey RPDO3_map(0x1602, 0x0);
-    const SDOkey RPDO4_map(0x1603, 0x0);
-
-    const SDOkey RPDO1_map_sub1(0x1600, 0x1);
-    const SDOkey RPDO2_map_sub1(0x1601, 0x1);
-    const SDOkey RPDO3_map_sub1(0x1602, 0x1);
-    const SDOkey RPDO4_map_sub1(0x1603, 0x1);
-
-    const SDOkey RPDO1_map_sub2(0x1600, 0x2);
-    const SDOkey RPDO2_map_sub2(0x1601, 0x2);
-    const SDOkey RPDO3_map_sub2(0x1602, 0x2);
-    const SDOkey RPDO4_map_sub2(0x1603, 0x2);
+    const SDOkey RPDO_map(0x1600, 0x0);
 
     const uint16_t CONTROLWORD_SHUTDOWN = 6;
     const uint16_t CONTROLWORD_QUICKSTOP = 2;
@@ -908,17 +903,23 @@ namespace canopen{
     const uint16_t CONTROLWORD_START_HOMING = 16;
     const uint16_t CONTROLWORD_ENABLE_IP_MODE = 16;
     const uint16_t CONTROLWORD_DISABLE_INTERPOLATED = 7;
+    const uint16_t CONTROLWORD_DISABLE_OPERATION = 7;
     const uint16_t CONTROL_WORD_DISABLE_VOLTAGE = 0x7D;
     const uint16_t CONTROLWORD_FAULT_RESET_0 = 0x00; //0x00;
     const uint16_t CONTROLWORD_FAULT_RESET_1 = 0x80;
     const uint16_t CONTROLWORD_HALT = 0x100;
 
-    const uint8_t MODES_OF_OPERATION_HOMING_MODE = 0x6;
-    const uint8_t MODES_OF_OPERATION_PROFILE_POSITION_MODE = 0x1;
-    const uint8_t MODES_OF_OPERATION_VELOCITY_MODE = 0x2;
-    const uint8_t MODES_OF_OPERATION_PROFILE_VELOCITY_MODE = 0x3;
-    const uint8_t MODES_OF_OPERATION_TORQUE_PROFILE_MODE = 0x4;
-    const uint8_t MODES_OF_OPERATION_INTERPOLATED_POSITION_MODE = 0x7;
+    const int8_t MODES_OF_OPERATION_HOMING_MODE = 0x6;
+    const int8_t MODES_OF_OPERATION_PROFILE_POSITION_MODE = 0x1;
+    const int8_t MODES_OF_OPERATION_VELOCITY_MODE = 0x2;
+    const int8_t MODES_OF_OPERATION_PROFILE_VELOCITY_MODE = 0x3;
+    const int8_t MODES_OF_OPERATION_TORQUE_PROFILE_MODE = 0x4;
+    const int8_t MODES_OF_OPERATION_INTERPOLATED_POSITION_MODE = 0x7;
+
+    static const char * const modesDisplay[] =
+    {"NO_MODE", "PROFILE_POSITION_MODE", "VELOCITY", "PROFILE_VELOCITY_MODE",
+                              "TORQUE_PROFILED_MODE", "RESERVED", "HOMING_MODE", "INTERPOLATED_POSITION_MODE",
+                              "CYCLIC_SYNCHRONOUS_POSITION"};
 
     const int8_t IP_TIME_INDEX_MILLISECONDS = 0xFD;
     const int8_t IP_TIME_INDEX_HUNDREDMICROSECONDS = 0xFC;
