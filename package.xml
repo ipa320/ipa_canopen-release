@@ -1,6 +1,6 @@
 <package>
   <name>ipa_canopen_core</name>
-  <version>0.5.1</version>
+  <version>0.5.2</version>
   <description>
 
      ROS-independent CANopen C++ library. 
@@ -20,7 +20,7 @@
   <run_depend>libpcan</run_depend>
 
   <export>
-    <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lipa_canopen_core"/>
+    <cpp cflags="-I${prefix}/include -I${prefix}/include/ipa_canopen_core" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib -lipa_canopen_core"/>
   </export>
 
 </package>
