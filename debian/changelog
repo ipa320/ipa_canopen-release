@@ -1,8 +1,0 @@
-ros-hydro-ipa-canopen (0.5.1-1raring) raring; urgency=high
-
-  * Catkinized Version of the ipa_canopen package
-  * Contributors: thiago
-
- -- Thiago de Freitas <tdf@ipa.fhg.de>  Wed, 19 Mar 2014 23:00:00 -0000
-
-
