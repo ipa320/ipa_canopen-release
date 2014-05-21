@@ -133,7 +133,7 @@ bool CANopenInit(cob_srvs::Trigger::Request &req, cob_srvs::Trigger::Response &r
     {
         res.success.data = false;
         res.error_message.data = "Module could not be initialized";
-        ROS_WARN("THis chain could not be initialized. Check for possible errors and try to initialize it again.");
+        ROS_WARN("This chain could not be initialized. Check for possible errors and try to initialize it again.");
     }
 
 
@@ -377,7 +377,7 @@ void readParamsFromParameterServer(ros::NodeHandle n)
         }
         else
         {
-            ROS_INFO("Parameter %s not set, shutting down node...", param.c_str());
+            ROS_WARN("Parameter %s not set, using default [1]...", param.c_str());
             for (int i=0; i < DOF; i++)
                 motor_direction.push_back(1);
         }
@@ -452,6 +452,7 @@ void setJointConstraints(ros::NodeHandle n)
             ROS_ERROR("Unable to load robot model from parameter %s",full_param_name.c_str());
             n.shutdown();
         }
+        ROS_INFO("Robot model loaded succesfully");
         //ROS_INFO("%s content\n%s", full_param_name.c_str(), xml_string.c_str());
 
         /// Get urdf model out of robot_description
@@ -473,6 +474,12 @@ void setJointConstraints(ros::NodeHandle n)
         std::vector<std::string> jointNames = canopen::deviceGroups[chainName].getNames();
         for (int i = 0; i < DOF; i++)
         {
+            if(!model.getJoint(jointNames[i].c_str()))
+            {
+                ROS_ERROR("Joint %s is not available",jointNames[i].c_str());
+                n.shutdown();
+                exit(1);
+            }
             if(!model.getJoint(jointNames[i].c_str())->limits)
             {
                 ROS_ERROR("Parameter limits could not be found in the URDF contents.");
@@ -521,6 +528,7 @@ void setJointConstraints(ros::NodeHandle n)
             }
             Offsets[i] = model.getJoint(jointNames[i].c_str())->calibration->rising.get()[0];
         }
+        ROS_INFO("Successfully got offsets and limits");
 
         /// Set parameters
 
@@ -685,8 +693,9 @@ int main(int argc, char **argv)
             keyvalues.push_back(keyval);
 
             keyval.key = "Device Name";
-            std::vector<char> dev_name = canopen::devices[id].getManufacturerDevName();
-            keyval.value = std::string(dev_name.begin(), dev_name.end());
+            keyval.value = name.c_str();
+            //std::vector<char> dev_name = canopen::devices[id].getManufacturerDevName();
+            //keyval.value = std::string(dev_name.begin(), dev_name.end());
             keyvalues.push_back(keyval);
 
             /*
@@ -756,11 +765,14 @@ int main(int argc, char **argv)
             //ROS_INFO("Fault: %d", error_);
             //ROS_INFO("Referenced: %d", initialized_);
 
+            std::stringstream diag_string;
+            diag_string << dg.first;
+            diagstatus.name = diag_string.str().c_str();
+                
             // set data to diagnostics
             if(error_)
             {
                 diagstatus.level = 2;
-                diagstatus.name = id;
                 diagstatus.message = "Fault occured.";
                 diagstatus.values = keyvalues;
                 break;
@@ -770,14 +782,12 @@ int main(int argc, char **argv)
                 if (initialized_)
                 {
                     diagstatus.level = 0;
-                    diagstatus.name = id;
                     diagstatus.message = "Device initialized and running";
                     diagstatus.values = keyvalues;
                 }
                 else
                 {
                     diagstatus.level = 1;
-                    diagstatus.name = id;
                     diagstatus.message = "Device not initialized";
                     diagstatus.values = keyvalues;
                     break;
