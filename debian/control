@@ -1,0 +1,12 @@
+Source: ros-hydro-ipa-canopen
+Section: misc
+Priority: extra
+Maintainer: Thiago de Freitas <tdf@ipa.fhg.de>
+Build-Depends: debhelper (>= 9.0.0), ros-hydro-catkin
+Homepage: http://ros.org/wiki/ipa_canopen
+Standards-Version: 3.9.2
+
+Package: ros-hydro-ipa-canopen
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-hydro-ipa-canopen-core, ros-hydro-ipa-canopen-ros
+Description: This stack includes packages that provide access to CANopen hardware through ROS messages, services and actions.
