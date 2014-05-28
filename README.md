@@ -1,3 +1,25 @@
+## ipa_canopen (hydro) - 0.5.6-0
+
+The packages in the `ipa_canopen` repository were released into the `hydro` distro by running `/usr/bin/bloom-release --ros-distro hydro --track hydro ipa_canopen` on `Wed, 28 May 2014 09:44:15 -0000`
+
+These packages were released:
+- `ipa_canopen`
+- `ipa_canopen_core`
+- `ipa_canopen_ros`
+
+Version of package(s) in repository `ipa_canopen`:
+- rosdistro version: `0.5.5-0`
+- old version: `0.5.5-0`
+- new version: `0.5.6-0`
+
+Versions of tools used:
+- bloom version: `0.5.9`
+- catkin_pkg version: `0.2.2`
+- rosdep version: `0.10.27`
+- rosdistro version: `0.3.5`
+- vcstools version: `0.1.35`
+
+
 ## ipa_canopen (hydro) - 0.5.5-0
 
 The packages in the `ipa_canopen` repository were released into the `hydro` distro by running `/usr/bin/bloom-release --ros-distro hydro --track hydro ipa_canopen` on `Wed, 21 May 2014 08:08:36 -0000`
