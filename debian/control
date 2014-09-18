@@ -1,0 +1,12 @@
+Source: ros-indigo-ipa-canopen-ros
+Section: misc
+Priority: extra
+Maintainer: Thiago de Freitas <tdf@ipa.fhg.de>
+Build-Depends: debhelper (>= 9.0.0), libyaml-cpp-dev, ros-indigo-brics-actuator, ros-indigo-catkin, ros-indigo-cob-srvs, ros-indigo-control-msgs, ros-indigo-diagnostic-msgs, ros-indigo-ipa-canopen-core, ros-indigo-libpcan, ros-indigo-roscpp, ros-indigo-rospy, ros-indigo-sensor-msgs, ros-indigo-std-msgs, ros-indigo-urdf
+Homepage: http://ros.org/wiki/ipa_canopen_ros
+Standards-Version: 3.9.2
+
+Package: ros-indigo-ipa-canopen-ros
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-brics-actuator, ros-indigo-cob-srvs, ros-indigo-control-msgs, ros-indigo-diagnostic-msgs, ros-indigo-ipa-canopen-core, ros-indigo-libpcan, ros-indigo-roscpp, ros-indigo-rospy, ros-indigo-sensor-msgs, ros-indigo-std-msgs
+Description: This package provides functionalities to communicate a ROS Node to CANopen devices
