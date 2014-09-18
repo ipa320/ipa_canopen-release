@@ -1,3 +1,27 @@
+## ipa_canopen (indigo) - 0.6.0-0
+
+The packages in the `ipa_canopen` repository were released into the `indigo` distro by running `/usr/bin/bloom-release --rosdistro indigo --track indigo ipa_canopen --edit` on `Thu, 18 Sep 2014 07:42:27 -0000`
+
+These packages were released:
+- `ipa_canopen`
+- `ipa_canopen_core`
+- `ipa_canopen_ros`
+
+Version of package(s) in repository `ipa_canopen`:
+- upstream repository: https://github.com/ipa320/ipa_canopen.git
+- release repository: https://github.com/ipa320/ipa_canopen-release.git
+- rosdistro version: `0.5.7-0`
+- old version: `0.5.7-0`
+- new version: `0.6.0-0`
+
+Versions of tools used:
+- bloom version: `0.5.11`
+- catkin_pkg version: `0.2.4`
+- rosdep version: `0.10.30`
+- rosdistro version: `0.3.5`
+- vcstools version: `0.1.35`
+
+
 ## ipa_canopen (indigo) - 0.5.7-0
 
 The packages in the `ipa_canopen` repository were released into the `indigo` distro by running `/usr/bin/bloom-release --rosdistro indigo --track indigo ipa_canopen --edit` on `Tue, 26 Aug 2014 10:59:18 -0000`
