@@ -1,0 +1,12 @@
+Source: ros-indigo-ipa-canopen
+Section: misc
+Priority: extra
+Maintainer: Thiago de Freitas <tdf@ipa.fhg.de>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-catkin
+Homepage: http://ros.org/wiki/ipa_canopen
+Standards-Version: 3.9.2
+
+Package: ros-indigo-ipa-canopen
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-ipa-canopen-core, ros-indigo-ipa-canopen-ros
+Description: This stack includes packages that provide access to CANopen hardware through ROS messages, services and actions.
